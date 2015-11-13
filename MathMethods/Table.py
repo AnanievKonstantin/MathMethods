@@ -5,7 +5,7 @@ class Table(QtGui.QTableWidget):
 
     def __init__(self, quantityVariables, parent=None):
         QtGui.QTableWidget.__init__(self, parent)
-        self.setColumnCount(quantityVariables*2 + 3)
+        self.setColumnCount(quantityVariables*2 + 2)
         self.setRowCount(quantityVariables + 1)
         self.__quantityVariables = quantityVariables
 
@@ -20,7 +20,7 @@ class Table(QtGui.QTableWidget):
             for j in range(self.columnCount()):
                 self.setItem(i, j, QtGui.QTableWidgetItem("0"))
 
-        self.setHorizontalHeaderLabels(["Базис","B"]+[str(x) for x in range(1, self.columnCount()-2, 1)]+["Min"])
+        self.setHorizontalHeaderLabels(["B"]+[str(x) for x in range(1, self.columnCount()-2, 1)]+["Min"])
         self.setVerticalHeaderLabels([str(x+self.__quantityVariables) for x in range(1, self.rowCount(), 1)]+["F"])
 
 
