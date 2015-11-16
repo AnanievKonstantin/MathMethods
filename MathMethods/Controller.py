@@ -1,6 +1,5 @@
 import sys
 from PyQt4 import QtGui, QtCore
-import numpy as num
 from MathMethods import Table, Model, Control_panel
 
 
@@ -27,11 +26,11 @@ class Controller(QtGui.QApplication):
     def play(self):
         self.exec_()
 
-    def __create_table(self, name,var_count):
+    def __create_table(self, name,var_x,var_s):
         label = QtGui.QLabel(name)
         self.__lay.addWidget(label)
 
-        table = Table.Table(var_count)
+        table = Table.Table(var_x, var_s)
         self.__lay.addWidget(table)
         self.__table_list.append(table)
         self.__label_list.append(label)
@@ -47,34 +46,35 @@ class Controller(QtGui.QApplication):
         Установит отклик на сигналы от панели управления
         :return:
         """
-        self.__control_panel.connect(self.__control_panel, QtCore.SIGNAL("apply_signal(int)"),
-                                     self, QtCore.SLOT("apply_table_data(int)"))
+        self.__control_panel.connect(self.__control_panel, QtCore.SIGNAL("apply_signal(int,int)"),
+                                     self, QtCore.SLOT("apply_table_data(int,int)"))
 
         self.__control_panel.connect(self.__control_panel, QtCore.SIGNAL("calc_signal()"),
                                      self, QtCore.SLOT("calculate()"))
 
     @QtCore.pyqtSlot()
     def calculate(self):
+        print("IN-----------")
         if len(self.__table_list) != 0:
-            #current_table = self.__create_table("Step: "+str(self.__step_number),3)
-            a = 3
+            # current_table = self.__create_table("Step: "+str(self.__step_number),3)
+            table_to_calc = self.__table_list[0]
+            self.__model.calculate_simplex_method(table_to_calc.get_array())
 
         else:
             print("Empty table")
+        print("Out-----------")
 
-    @QtCore.pyqtSlot(int)
-    def apply_table_data(self, var_count):
+    @QtCore.pyqtSlot(int, int)
+    def apply_table_data(self, var_x, var_s,):
         for table in self.__table_list:
             self.__lay.removeWidget(table)
             table.close()
 
         for label in self.__label_list:
             self.__lay.removeWidget(label)
-            # label.widget().deleteLater()
-            #self.__lay.itemAt(0).widget().close()
 
         self.__table_list.clear()
         self.__label_list.clear()
         self.__step_number = 0
-        self.__create_table("First", var_count)
+        self.__create_table("First", var_x,var_s)
 
