@@ -17,10 +17,11 @@ class Model(QtCore.QObject):
         mainCol = self.__find_main_column(array);
         mainRow = self.__find_main_row(array, mainCol);
         new_array = self.__rect_method(mainCol, mainRow, array)
-
+        end_flag = self.__isEnd(new_array)
+        vertex_table_header = self.__create_vertex_header(mainCol, mainRow,array)
         print("end: calculate_simplex_method")
 
-        return array
+        return new_array,vertex_table_header, end_flag
 
     def __find_main_column(self, array: num.ndarray) -> int:
         """
@@ -32,7 +33,7 @@ class Model(QtCore.QObject):
         # this line copy last line of array
         F_line = array[array.shape[0]-1]
         F_line = F_line[0:len(F_line)-1]
-        print(F_line)
+        # print(F_line)
         absolute_array = num.absolute(F_line)
         max_absolute_value = num.max(absolute_array)
 
@@ -55,11 +56,11 @@ class Model(QtCore.QObject):
         :return: index of main row
         :rtype: int
         """
-        print("Start __find_main_row")
+        #print("Start __find_main_row")
         # print(array)
 
         min_array = num.ndarray
-        print(array.shape)
+        #print(array.shape)
 
         for i in range(array.shape[0] - 1):
             # print(array[i][0] / array[i][main_column])
@@ -68,7 +69,7 @@ class Model(QtCore.QObject):
                 array[i][array.shape[1] - 1] = 0
             else:
                 array[i][array.shape[1] - 1] = array[i][0] / array[i][main_column]
-            print(array[i][0], array[i][array.shape[1] - 1], sep=" ")
+            # print(array[i][0], array[i][array.shape[1] - 1], sep=" ")
 
         list_min = num.zeros((array.shape[0] - 1))
 
@@ -106,8 +107,8 @@ class Model(QtCore.QObject):
 
         """
         # print("before: ", tabulate(array))
-        print("Main i: ", row)
-        print("Main j: ", col)
+        #print("Main i: ", row)
+        #print("Main j: ", col)
 
         den = array[row][col]
         for j in range(array.shape[1] - 1):
@@ -121,5 +122,40 @@ class Model(QtCore.QObject):
             for j in range(array.shape[1] - 1):
                 array[i][j] -= k*array[row][j]
 
-        print(tabulate(array))
+        #print(tabulate(array))
         return array
+
+    def __isEnd(self,array: num.ndarray):
+        """
+        Performs a check on end conditions calculation
+        :param array:
+        :return: bool value  - true if process is ended
+        """
+        F_line = array[array.shape[0]-1]
+        F_line = F_line[0:len(F_line)-1]
+
+        # minus_array = num.where(F_line < 0)
+
+        print(num.min(F_line))
+
+        if num.min(F_line) < 0:
+            return True
+        else:
+            return False
+
+    def __create_vertex_header(self,col: int,row: int,array: num.ndarray) -> str:
+        """
+        Создает вертикальный заголовок катблицы
+        :param row:
+        :param col:
+        :return:
+        """
+        print("Col: ",col)
+        print("Row: ",row)
+
+        header = ["S"+str(x+(array.shape[0])) for x in range(array.shape[0]-1)]
+        print(header)
+        header[row] = "X"+str(col)
+        print(header)
+
+        return header

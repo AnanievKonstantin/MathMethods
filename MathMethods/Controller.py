@@ -16,6 +16,9 @@ class Controller(QtGui.QApplication):
         self.__model = Model.Model()
         self.__step_number = 0
 
+        self.__variable_count = 0
+        self.__verb_count = 0
+
         self.__control_panel = Control_panel.Control_panel()
 
         self.__build_window()
@@ -55,10 +58,24 @@ class Controller(QtGui.QApplication):
     @QtCore.pyqtSlot()
     def calculate(self):
         print("IN-----------")
+
+        work = True
+        current_table_index = 0
+        state_calculation = tuple()
+        current_table = None
+
         if len(self.__table_list) != 0:
-            # current_table = self.__create_table("Step: "+str(self.__step_number),3)
-            table_to_calc = self.__table_list[0]
-            self.__model.calculate_simplex_method(table_to_calc.get_array())
+            while(work):
+                table_to_calc = self.__table_list[current_table_index]
+                current_table_index +=1
+                state_calculation = self.__model.calculate_simplex_method(table_to_calc.get_array())
+
+                work = state_calculation[2]
+                current_table = self.__create_table("Step: "+str(self.__step_number),self.__variable_count,self.__verb_count)
+                current_table.set_array(state_calculation[0])
+                current_table.set_vertical_headers(state_calculation[1])
+                self.__step_number += 1
+
 
         else:
             print("Empty table")
@@ -66,6 +83,9 @@ class Controller(QtGui.QApplication):
 
     @QtCore.pyqtSlot(int, int)
     def apply_table_data(self, var_x, var_s,):
+        self.__variable_count = var_x
+        self.__verb_count = var_s
+        self.__step_number = 0
         for table in self.__table_list:
             self.__lay.removeWidget(table)
             table.close()
