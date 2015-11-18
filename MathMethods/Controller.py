@@ -1,16 +1,25 @@
 import sys
-from PyQt4 import QtGui, QtCore
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
 from MathMethods import Table, Model, Control_panel
 
 
-class Controller(QtGui.QApplication):
+class Controller(QApplication):
 
     def __init__(self,parent=None):
 
-        QtGui.QApplication.__init__(self, sys.argv)
+        QApplication.__init__(self, sys.argv)
 
-        self.__lay = QtGui.QVBoxLayout()
-        self.__window = QtGui.QWidget()
+        self.__lay = QVBoxLayout()
+        self.__window = QWidget()
+
+        self.__table_widget = QWidget()
+        self.__table_lay = QVBoxLayout()
+
+        self.__scroll = QScrollArea()
+
+
         self.__window.setWindowTitle("MM")
         self.__table_list = list()
         self.__label_list = list()
@@ -32,11 +41,11 @@ class Controller(QtGui.QApplication):
 
     def __create_table(self, name,var_x,var_s):
 
-        label = QtGui.QLabel(name)
-        self.__lay.addWidget(label)
+        label = QLabel(name)
+        self.__table_lay.addWidget(label)
 
         table = Table.Table(var_x, var_s)
-        self.__lay.addWidget(table)
+        self.__table_lay.addWidget(table)
         self.__table_list.append(table)
         self.__label_list.append(label)
 
@@ -47,18 +56,29 @@ class Controller(QtGui.QApplication):
         self.__window.setLayout(self.__lay)
         self.__lay.addWidget(self.__control_panel)
 
+        self.__table_widget.setLayout(self.__table_lay)
+
+        self.__scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.__scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.__scroll.setWidgetResizable(True)
+        self.__scroll.setWidget(self.__table_widget)
+
+        self.__lay.addWidget(self.__scroll)
+
+
+
     def __to_scatter__action(self):
         """
         Установит отклик на сигналы от панели управления
         :return:
         """
-        self.__control_panel.connect(self.__control_panel, QtCore.SIGNAL("apply_signal(int,int)"),
-                                      self, QtCore.SLOT("apply_table_data(int,int)"))
+        self.__control_panel.connect(self.__control_panel, SIGNAL("apply_signal(int,int)"),
+                                      self, SLOT("apply_table_data(int,int)"))
 
-        self.__control_panel.connect(self.__control_panel, QtCore.SIGNAL("calc_signal()"),
-                                      self, QtCore.SLOT("calculate()"))
+        self.__control_panel.connect(self.__control_panel, SIGNAL("calc_signal()"),
+                                      self, SLOT("calculate()"))
 
-    @QtCore.pyqtSlot()
+    @pyqtSlot()
     def calculate(self):
 
         print("IN-----------")
@@ -92,7 +112,7 @@ class Controller(QtGui.QApplication):
 
         print("Out-----------")
 
-    @QtCore.pyqtSlot(int, int)
+    @pyqtSlot(int, int)
     def apply_table_data(self, var_x, var_s,):
 
         self.__variable_count = var_x
@@ -100,11 +120,11 @@ class Controller(QtGui.QApplication):
         self.__step_number = 0
 
         for table in self.__table_list:
-            self.__lay.removeWidget(table)
+            self.__table_lay.removeWidget(table)
             table.close()
 
         for label in self.__label_list:
-            self.__lay.removeWidget(label)
+            self.__table_lay.removeWidget(label)
             label.close()
 
         self.__table_list.clear()

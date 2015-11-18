@@ -13,7 +13,8 @@ class Table(QtGui.QTableWidget):
 
         self.__main_variable_count = quantity_main_variables
         self.__additional_variable_count = quantity_additional_variables
-
+        self.setMinimumHeight(300)
+        #self.setAutoScroll(False)
         self.__fill_zeros()
         self.show()
 
@@ -34,8 +35,8 @@ class Table(QtGui.QTableWidget):
                 item = self.item(i,j)
                 array[i][j] = item.text()
 
-        for i in range(array.shape[0]):
-            array[i][array.shape[1]-1] = 0
+        # for i in range(array.shape[0]):
+        #     array[i][array.shape[1]-1] = 0
 
         return array
 

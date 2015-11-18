@@ -1,6 +1,7 @@
 from PyQt4 import QtGui, QtCore
 from tabulate import tabulate
 import numpy as num
+import sys
 
 
 class Model(QtCore.QObject):
@@ -15,6 +16,10 @@ class Model(QtCore.QObject):
 
         mainCol = self.__find_main_column(array, headers);
         mainRow = self.__find_main_row(array, mainCol,headers);
+
+        if mainRow == -1:
+            array,headers, False
+
         new_array = self.__rect_method(mainCol, mainRow, array)
         end_flag = self.__isEnd(new_array)
         vertex_table_header = self.__create_vertex_header(mainCol, mainRow,array,headers)
@@ -42,19 +47,22 @@ class Model(QtCore.QObject):
                 headers[i]= -1
                 continue
 
+
         # this line copy last line of array
         F_line = array[array.shape[0]-1]
         F_line = F_line[1:len(F_line)-1]
-        print("F: ",F_line)
-        print("headers: ",headers)
+
         absolute_array = num.absolute(F_line)
+
+        for i in range(len(headers)):
+            if headers[i] == -1:
+                continue
+            else:
+                absolute_array[headers[i] - 1] = -1;
+
         max_absolute_value = num.max(absolute_array)
 
-        # position = num.where(absolute_array == max_absolute_value)
-
         position = list(absolute_array).index(max_absolute_value)
-
-        print("Main col: ",position)
 
         # +1 так как таблица считается с B и после B идет X1
         return position+1
@@ -74,15 +82,25 @@ class Model(QtCore.QObject):
         """
 
         #подсчитать отнашения
+
+        print("headers: ", headers)
+        print("Before: ",tabulate(array))
+        print("main col: ",main_column)
+
         for i in range(array.shape[0] - 1):
-            if array[i][main_column] <= 0:
+            # if array[i][main_column] <= 0:
+            #     array[i][array.shape[1] - 1] = 0
+            #     print("<= 0",end=" ")
+            #     continue
+            if headers[i][0] == "X":
                 array[i][array.shape[1] - 1] = 0
-                continue
-            elif headers[i][0] == "X":
-                array[i][array.shape[1] - 1] = 0
+                print("x",end=" ")
                 continue
             else:
                 array[i][array.shape[1] - 1] = abs(array[i][0] / array[i][main_column])
+                print("ok")
+
+        print("After: ",tabulate(array))
 
         list_min = num.zeros((array.shape[0] - 1))
 
@@ -90,12 +108,22 @@ class Model(QtCore.QObject):
         for i in range(array.shape[0] - 1):
             list_min[i] = array[i][array.shape[1] - 1]
 
+        print("Min list row before zero strip: ",list_min)
 
-        list_min = num.extract(list_min>0,list_min)
+        #list_min = num.extract(list_min>0,list_min)
 
-        print("Min list row: ",list_min)
+        for i in range(len(list_min)):
+            if list_min[i] == 0:
+                list_min[i] = sys.maxsize
+
+        print("Min list row after zero strip: ",list_min)
+        #Условие завершениея вычислений
+        if len(list_min) == 0:
+            print("zero list condition")
+            return -1
+
         index_main_row = num.argmin(list_min)
-
+        print("main row: ",index_main_row)
         return index_main_row
 
     def __rect_method(self, col: int, row: int, array: num.ndarray) -> num.ndarray:
@@ -152,9 +180,9 @@ class Model(QtCore.QObject):
         :param old_headers
         :return:
         """
-        print("Col: ",col)
-        print("Row: ",row)
-
+        # print("Col: ",col)
+        # print("Row: ",row)
+        #
         print("old_headers: ",old_headers)
 
         old_headers[row] = "X"+str(col)
