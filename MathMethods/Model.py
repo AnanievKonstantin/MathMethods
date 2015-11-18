@@ -11,29 +11,42 @@ class Model(QtCore.QObject):
         QtCore.QObject.__init__(self, parent)
         pass
 
-    def calculate_simplex_method(self, array):
+    def calculate_simplex_method(self, array: num.ndarray, headers: list()):
 
-        print("start: calculate_simplex_method")
-        mainCol = self.__find_main_column(array);
-        mainRow = self.__find_main_row(array, mainCol);
+        mainCol = self.__find_main_column(array, headers);
+        mainRow = self.__find_main_row(array, mainCol,headers);
         new_array = self.__rect_method(mainCol, mainRow, array)
         end_flag = self.__isEnd(new_array)
-        vertex_table_header = self.__create_vertex_header(mainCol, mainRow,array)
-        print("end: calculate_simplex_method")
+        vertex_table_header = self.__create_vertex_header(mainCol, mainRow,array,headers)
 
         return new_array,vertex_table_header, end_flag
 
-    def __find_main_column(self, array: num.ndarray) -> int:
+    def __find_main_column(self, array: num.ndarray, list_headers:list) -> int:
         """
         Получить индекс базового столбца
+        :param headers:
         :param array: num.ndarray
         :return: int
         """
 
+        headers = list(list_headers)
+
+        for i in range(len(headers)):
+            if headers[i][0] == "S":
+                headers[i] = -1
+                continue
+            elif headers[i][0] == "X":
+                headers[i] = int(headers[i][1])
+                continue
+            elif headers[i][0] == "F":
+                headers[i]= -1
+                continue
+
         # this line copy last line of array
         F_line = array[array.shape[0]-1]
-        F_line = F_line[0:len(F_line)-1]
-        # print(F_line)
+        F_line = F_line[1:len(F_line)-1]
+        print("F: ",F_line)
+        print("headers: ",headers)
         absolute_array = num.absolute(F_line)
         max_absolute_value = num.max(absolute_array)
 
@@ -41,60 +54,48 @@ class Model(QtCore.QObject):
 
         position = list(absolute_array).index(max_absolute_value)
 
-        # print(position)
+        print("Main col: ",position)
 
-        return position
+        # +1 так как таблица считается с B и после B идет X1
+        return position+1
 
 
-    def __find_main_row(self, array: num.ndarray, main_column: int) ->int:
+    def __find_main_row(self, array: num.ndarray, main_column: int, headers: list) ->int:
         """
         Find index of main row
         :param array: Array from table
         :type array: num.ndarray
         :param main_column
         :type main_column: int
+        :param headers
+        :type headers: list
         :return: index of main row
         :rtype: int
         """
-        #print("Start __find_main_row")
-        # print(array)
 
-        min_array = num.ndarray
-        #print(array.shape)
-
+        #подсчитать отнашения
         for i in range(array.shape[0] - 1):
-            # print(array[i][0] / array[i][main_column])
-            # array[i][array.shape[1]] = array[i][0] / array[i][main_column]
             if array[i][main_column] <= 0:
                 array[i][array.shape[1] - 1] = 0
+                continue
+            elif headers[i][0] == "X":
+                array[i][array.shape[1] - 1] = 0
+                continue
             else:
-                array[i][array.shape[1] - 1] = array[i][0] / array[i][main_column]
-            # print(array[i][0], array[i][array.shape[1] - 1], sep=" ")
+                array[i][array.shape[1] - 1] = abs(array[i][0] / array[i][main_column])
 
         list_min = num.zeros((array.shape[0] - 1))
 
+        #записать значения из столбца min в list
         for i in range(array.shape[0] - 1):
             list_min[i] = array[i][array.shape[1] - 1]
 
-        # print("Min list: ",list_min)
 
         list_min = num.extract(list_min>0,list_min)
-        min_value = num.amin(list_min)
+
+        print("Min list row: ",list_min)
         index_main_row = num.argmin(list_min)
 
-        # print("Value: ",min_value)
-        # print("Index: ",index_main_row)
-
-
-        # min_relation = min(list_min);
-        #
-        # # print("Min at:",list_min.index(min_relation))
-        #
-        # index_main_row = list_min.index(min_relation)
-        #
-        # # print(tabulate(array))
-        # print("Index: ",index_main_row)
-        # print("End __find_main_row")
         return index_main_row
 
     def __rect_method(self, col: int, row: int, array: num.ndarray) -> num.ndarray:
@@ -143,19 +144,21 @@ class Model(QtCore.QObject):
         else:
             return False
 
-    def __create_vertex_header(self,col: int,row: int,array: num.ndarray) -> str:
+    def __create_vertex_header(self,col: int,row: int,array: num.ndarray, old_headers: list) -> str:
         """
         Создает вертикальный заголовок катблицы
         :param row:
         :param col:
+        :param old_headers
         :return:
         """
         print("Col: ",col)
         print("Row: ",row)
 
-        header = ["S"+str(x+(array.shape[0])) for x in range(array.shape[0]-1)]
-        print(header)
-        header[row] = "X"+str(col)
-        print(header)
+        print("old_headers: ",old_headers)
 
-        return header
+        old_headers[row] = "X"+str(col)
+        new_headers = old_headers
+
+        print("new_headers: ",new_headers)
+        return new_headers

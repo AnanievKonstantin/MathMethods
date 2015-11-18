@@ -6,6 +6,7 @@ from MathMethods import Table, Model, Control_panel
 class Controller(QtGui.QApplication):
 
     def __init__(self,parent=None):
+
         QtGui.QApplication.__init__(self, sys.argv)
 
         self.__lay = QtGui.QVBoxLayout()
@@ -30,6 +31,7 @@ class Controller(QtGui.QApplication):
         self.exec_()
 
     def __create_table(self, name,var_x,var_s):
+
         label = QtGui.QLabel(name)
         self.__lay.addWidget(label)
 
@@ -41,6 +43,7 @@ class Controller(QtGui.QApplication):
         return table
 
     def __build_window(self):
+
         self.__window.setLayout(self.__lay)
         self.__lay.addWidget(self.__control_panel)
 
@@ -50,13 +53,14 @@ class Controller(QtGui.QApplication):
         :return:
         """
         self.__control_panel.connect(self.__control_panel, QtCore.SIGNAL("apply_signal(int,int)"),
-                                     self, QtCore.SLOT("apply_table_data(int,int)"))
+                                      self, QtCore.SLOT("apply_table_data(int,int)"))
 
         self.__control_panel.connect(self.__control_panel, QtCore.SIGNAL("calc_signal()"),
-                                     self, QtCore.SLOT("calculate()"))
+                                      self, QtCore.SLOT("calculate()"))
 
     @QtCore.pyqtSlot()
     def calculate(self):
+
         print("IN-----------")
 
         work = True
@@ -66,32 +70,42 @@ class Controller(QtGui.QApplication):
 
         if len(self.__table_list) != 0:
             while(work):
+                print("___________________________Iteration____________________Start")
+                if self.__step_number > 30:
+                    break
                 table_to_calc = self.__table_list[current_table_index]
                 current_table_index +=1
-                state_calculation = self.__model.calculate_simplex_method(table_to_calc.get_array())
+
+                state_calculation = self.__model.calculate_simplex_method(table_to_calc.get_array(),
+                                                                          table_to_calc.get_vertical_headers())
 
                 work = state_calculation[2]
-                current_table = self.__create_table("Step: "+str(self.__step_number),self.__variable_count,self.__verb_count)
+                current_table = self.__create_table("Step: "+str(self.__step_number),
+                                                    self.__variable_count,
+                                                    self.__verb_count)
                 current_table.set_array(state_calculation[0])
                 current_table.set_vertical_headers(state_calculation[1])
                 self.__step_number += 1
-
-
+                print("___________________________Iteration____________________END")
         else:
             print("Empty table")
+
         print("Out-----------")
 
     @QtCore.pyqtSlot(int, int)
     def apply_table_data(self, var_x, var_s,):
+
         self.__variable_count = var_x
         self.__verb_count = var_s
         self.__step_number = 0
+
         for table in self.__table_list:
             self.__lay.removeWidget(table)
             table.close()
 
         for label in self.__label_list:
             self.__lay.removeWidget(label)
+            label.close()
 
         self.__table_list.clear()
         self.__label_list.clear()
