@@ -21,6 +21,8 @@ class Controller(QApplication):
 
 
         self.__window.setWindowTitle("MM")
+
+        self.__mode_calculation = "max"
         self.__table_list = list()
         self.__label_list = list()
         self.__model = Model.Model()
@@ -97,7 +99,7 @@ class Controller(QApplication):
                 current_table_index +=1
 
                 state_calculation = self.__model.calculate_simplex_method(table_to_calc.get_array(),
-                                                                          table_to_calc.get_vertical_headers())
+                                                                          table_to_calc.get_vertical_headers(),self.__mode_calculation)
 
                 work = state_calculation[2]
                 current_table = self.__create_table("Step: "+str(self.__step_number),
@@ -107,17 +109,22 @@ class Controller(QApplication):
                 current_table.set_vertical_headers(state_calculation[1])
                 self.__step_number += 1
                 print("___________________________Iteration____________________END")
+
+            print("__variable_count: ", self.__variable_count)
+            print("__verb_count: ", self.__verb_count)
+            print("mode: ",self.__mode_calculation)
         else:
             print("Empty table")
 
         print("Out-----------")
 
-    @pyqtSlot(int, int)
-    def apply_table_data(self, var_x, var_s,):
+    @pyqtSlot(int,int)
+    def apply_table_data(self, var_x: int, var_s: int):
 
         self.__variable_count = var_x
         self.__verb_count = var_s
         self.__step_number = 0
+        self.__mode_calculation = self.__control_panel.get_mode()
 
         for table in self.__table_list:
             self.__table_lay.removeWidget(table)

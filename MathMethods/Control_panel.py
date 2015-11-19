@@ -9,11 +9,16 @@ class Control_panel(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
 
         self.__lay = QtGui.QGridLayout()
+
+        self.__mode_switcher = QtGui.QComboBox()
+        self.__mode_switcher.addItems(["max", "min"])
+
         self.__apply_btn = QtGui.QPushButton("Apply")
         self.__calc_btn = QtGui.QPushButton("Calc")
 
-        self.__text_var_x = QtGui.QLabel("X var:")
-        self.__text_var_s = QtGui.QLabel("S var:")
+        self.__text_var_x = QtGui.QLabel("Основные переменные:")
+        self.__text_var_s = QtGui.QLabel("Дополнительные переменные:")
+        self.__text_mode_calculation = QtGui.QLabel("Режим вычисления: ")
 
         self.__input_var_x= QtGui.QLineEdit()
         self.__input_var_s= QtGui.QLineEdit()
@@ -31,11 +36,19 @@ class Control_panel(QtGui.QWidget):
         self.__lay.addWidget(self.__text_var_s, 1, 0)
         self.__lay.addWidget(self.__input_var_s, 1, 1)
 
-        self.__lay.addWidget(self.__apply_btn, 2, 0)
-        self.__lay.addWidget(self.__calc_btn, 2, 1)
+        self.__lay.addWidget(self.__text_mode_calculation, 2, 0)
+        self.__lay.addWidget(self.__mode_switcher)
+
+        self.__lay.addWidget(self.__apply_btn, 3, 0)
+        self.__lay.addWidget(self.__calc_btn, 3, 1)
+
 
     def __getNumber(self):
         return int(self.__input_var_x.text()), int(self.__input_var_s.text())
+
+    def get_mode(self) -> str:
+        print("!!!: ", self.__mode_switcher.itemText(self.__mode_switcher.currentIndex()))
+        return self.__mode_switcher.itemText(self.__mode_switcher.currentIndex())
 
     @QtCore.pyqtSlot()
     def emit_apply_signal(self):
@@ -46,7 +59,7 @@ class Control_panel(QtGui.QWidget):
         except ValueError:
             print("Not number")
         else:
-            self.apply_signal.emit(count_x,count_s)
+            self.apply_signal.emit(count_x, count_s)
 
     @QtCore.pyqtSlot()
     def emit_calc_signal(self):

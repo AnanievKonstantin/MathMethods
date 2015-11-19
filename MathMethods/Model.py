@@ -12,21 +12,21 @@ class Model(QtCore.QObject):
         QtCore.QObject.__init__(self, parent)
         pass
 
-    def calculate_simplex_method(self, array: num.ndarray, headers: list()):
+    def calculate_simplex_method(self, array: num.ndarray, headers: list(), mode: str):
 
-        mainCol = self.__find_main_column(array, headers);
+        mainCol = self.__find_main_column(array, headers, mode);
         mainRow = self.__find_main_row(array, mainCol,headers);
 
         if mainRow == -1:
             array,headers, False
 
         new_array = self.__rect_method(mainCol, mainRow, array)
-        end_flag = self.__isEnd(new_array)
+        end_flag = self.__isEnd(new_array,mode)
         vertex_table_header = self.__create_vertex_header(mainCol, mainRow,array,headers)
 
         return new_array,vertex_table_header, end_flag
 
-    def __find_main_column(self, array: num.ndarray, list_headers:list) -> int:
+    def __find_main_column(self, array: num.ndarray, list_headers:list, mode: str) -> int:
         """
         Получить индекс базового столбца
         :param headers:
@@ -34,37 +34,28 @@ class Model(QtCore.QObject):
         :return: int
         """
 
-        headers = list(list_headers)
-
-        for i in range(len(headers)):
-            if headers[i][0] == "S":
-                headers[i] = -1
-                continue
-            elif headers[i][0] == "X":
-                headers[i] = int(headers[i][1])
-                continue
-            elif headers[i][0] == "F":
-                headers[i]= -1
-                continue
-
 
         # this line copy last line of array
         F_line = array[array.shape[0]-1]
-        F_line = F_line[1:len(F_line)-1]
 
-        absolute_array = num.absolute(F_line)
+        #strip b,min, and additional variable column
+        F_line = F_line[1:len(F_line) - array.shape[0]]
 
-        for i in range(len(headers)):
-            if headers[i] == -1:
-                continue
-            else:
-                absolute_array[headers[i] - 1] = -1;
+        print("F-LINE: ",F_line)
 
-        max_absolute_value = num.max(absolute_array)
+        # тут должно быть условие поиска столбца по F -> min F -> max
 
-        position = list(absolute_array).index(max_absolute_value)
+        position = int()
+
+        if mode == "max":
+            min_value = num.min(F_line)
+            position = list(F_line).index(min_value)
+        elif mode == "min":
+            max_value = num.max(F_line)
+            position = list(F_line).index(max_value)
 
         # +1 так как таблица считается с B и после B идет X1
+        print("Main column: ", position+1)
         return position+1
 
 
@@ -154,7 +145,7 @@ class Model(QtCore.QObject):
         #print(tabulate(array))
         return array
 
-    def __isEnd(self,array: num.ndarray):
+    def __isEnd(self,array: num.ndarray, mode: str):
         """
         Performs a check on end conditions calculation
         :param array:
@@ -167,10 +158,18 @@ class Model(QtCore.QObject):
 
         print(num.min(F_line))
 
-        if num.min(F_line) < 0:
-            return True
-        else:
-            return False
+        if mode == "max":
+            if num.min(F_line) >= 0:
+                return True
+            else:
+                return False
+        elif mode == "min":
+            if num.min(F_line) <= 0:
+                return True
+            else:
+                return False
+
+
 
     def __create_vertex_header(self,col: int,row: int,array: num.ndarray, old_headers: list) -> str:
         """
