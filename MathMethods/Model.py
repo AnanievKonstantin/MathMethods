@@ -3,7 +3,6 @@ from tabulate import tabulate
 import numpy as num
 import sys
 
-
 class Model(QtCore.QObject):
 
     calculationSuccess = QtCore.pyqtSignal(int)
@@ -14,15 +13,13 @@ class Model(QtCore.QObject):
 
     def calculate_simplex_method(self, array: num.ndarray, headers: list(), mode: str):
 
-        mainCol = self.__find_main_column(array, headers, mode);
-        mainRow = self.__find_main_row(array, mainCol,headers);
-
-        if mainRow == -1:
-            array,headers, False
+        mainCol = self.__find_main_column(array, headers, mode)
+        mainRow = self.__find_main_row(array, mainCol, headers)
 
         new_array = self.__rect_method(mainCol, mainRow, array)
-        end_flag = self.__isEnd(new_array,mode)
-        vertex_table_header = self.__create_vertex_header(mainCol, mainRow,array,headers)
+        end_flag = self.__isEnd(new_array, mode)
+        print("End ?: ",end_flag)
+        vertex_table_header = self.__create_vertex_header(mainCol, mainRow, array, headers)
 
         return new_array,vertex_table_header, end_flag
 
@@ -41,11 +38,12 @@ class Model(QtCore.QObject):
         #strip b,min, and additional variable column
         F_line = F_line[1:len(F_line) - array.shape[0]]
 
-        print("F-LINE: ",F_line)
+        #print("F-LINE: ",F_line)
 
-        # тут должно быть условие поиска столбца по F -> min F -> max
 
         position = int()
+
+        print("__find_main_column: F_Line: ",F_line)
 
         if mode == "max":
             min_value = num.min(F_line)
@@ -55,7 +53,7 @@ class Model(QtCore.QObject):
             position = list(F_line).index(max_value)
 
         # +1 так как таблица считается с B и после B идет X1
-        print("Main column: ", position+1)
+        #print("Main column: ", position+1)
         return position+1
 
 
@@ -85,13 +83,13 @@ class Model(QtCore.QObject):
             #     continue
             if headers[i][0] == "X":
                 array[i][array.shape[1] - 1] = 0
-                print("x",end=" ")
+                #print("x",end=" ")
                 continue
             else:
                 array[i][array.shape[1] - 1] = abs(array[i][0] / array[i][main_column])
-                print("ok")
+                #print("ok")
 
-        print("After: ",tabulate(array))
+        #print("After: ",tabulate(array))
 
         list_min = num.zeros((array.shape[0] - 1))
 
@@ -99,7 +97,7 @@ class Model(QtCore.QObject):
         for i in range(array.shape[0] - 1):
             list_min[i] = array[i][array.shape[1] - 1]
 
-        print("Min list row before zero strip: ",list_min)
+        #print("Min list row before zero strip: ",list_min)
 
         #list_min = num.extract(list_min>0,list_min)
 
@@ -107,14 +105,14 @@ class Model(QtCore.QObject):
             if list_min[i] == 0:
                 list_min[i] = sys.maxsize
 
-        print("Min list row after zero strip: ",list_min)
+        #print("Min list row after zero strip: ",list_min)
         #Условие завершениея вычислений
         if len(list_min) == 0:
-            print("zero list condition")
+            #print("zero list condition")
             return -1
 
         index_main_row = num.argmin(list_min)
-        print("main row: ",index_main_row)
+        #print("main row: ",index_main_row)
         return index_main_row
 
     def __rect_method(self, col: int, row: int, array: num.ndarray) -> num.ndarray:
@@ -152,19 +150,32 @@ class Model(QtCore.QObject):
         :return: bool value  - true if process is ended
         """
         F_line = array[array.shape[0]-1]
-        F_line = F_line[0:len(F_line)-1]
+        F_line = F_line[1:len(F_line)-array.shape[0]]
 
         # minus_array = num.where(F_line < 0)
 
-        print(num.min(F_line))
+        print("__isEnd: F_Line: ",F_line)
 
         if mode == "max":
-            if num.min(F_line) >= 0:
+            print("Check max condition ")
+            some_element_less_zero = False
+            for i in F_line:
+                if i >= 0: continue
+                else: some_element_less_zero = True
+
+            if some_element_less_zero == False:
                 return True
             else:
                 return False
+
         elif mode == "min":
-            if num.min(F_line) <= 0:
+            print("Check min condition ")
+            some_element_more_zero = False
+            for i in F_line:
+                if i <= 0: continue
+                else:some_element_more_zero = True
+
+            if some_element_more_zero == False:
                 return True
             else:
                 return False

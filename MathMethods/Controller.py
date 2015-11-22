@@ -85,13 +85,13 @@ class Controller(QApplication):
 
         print("IN-----------")
 
-        work = True
+        is_end = False
         current_table_index = 0
         state_calculation = tuple()
         current_table = None
 
         if len(self.__table_list) != 0:
-            while(work):
+            while(not(is_end)):
                 print("___________________________Iteration____________________Start")
                 if self.__step_number > 30:
                     break
@@ -101,18 +101,17 @@ class Controller(QApplication):
                 state_calculation = self.__model.calculate_simplex_method(table_to_calc.get_array(),
                                                                           table_to_calc.get_vertical_headers(),self.__mode_calculation)
 
-                work = state_calculation[2]
+                is_end = state_calculation[2]
                 current_table = self.__create_table("Step: "+str(self.__step_number),
                                                     self.__variable_count,
                                                     self.__verb_count)
                 current_table.set_array(state_calculation[0])
                 current_table.set_vertical_headers(state_calculation[1])
                 self.__step_number += 1
-                print("___________________________Iteration____________________END")
 
-            print("__variable_count: ", self.__variable_count)
-            print("__verb_count: ", self.__verb_count)
-            print("mode: ",self.__mode_calculation)
+                print("State: ", state_calculation)
+
+                print("___________________________Iteration____________________END")
         else:
             print("Empty table")
 
