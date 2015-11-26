@@ -26,10 +26,7 @@ class Table(QtGui.QTableWidget):
             self.setItem(i, j, QtGui.QTableWidgetItem("1"))
             pass
 
-
-
     def __fill_zeros(self):
-
         for i in range(self.rowCount()):
             for j in range(self.columnCount()):
                 self.setItem(i, j, QtGui.QTableWidgetItem("0"))
@@ -75,4 +72,9 @@ class Table(QtGui.QTableWidget):
                 iteam.setText(str(array_values[i][j]))
         pass
 
+    def set_min_column(self, array):
+        j = self.columnCount() - 1
+        for i in range(self.rowCount()):
+            self.setItem(i, j, QtGui.QTableWidgetItem(str(array[i][j])))
 
+        pass

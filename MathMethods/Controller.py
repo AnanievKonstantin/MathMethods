@@ -88,7 +88,7 @@ class Controller(QApplication):
         is_end = False
         current_table_index = 0
         state_calculation = tuple()
-        current_table = None
+        current_table = None #QTableWidget()
 
         if len(self.__table_list) != 0:
             while(not(is_end)):
@@ -101,6 +101,7 @@ class Controller(QApplication):
                 state_calculation = self.__model.calculate_simplex_method(table_to_calc.get_array(),
                                                                           table_to_calc.get_vertical_headers(),self.__mode_calculation)
 
+                table_to_calc.set_min_column(state_calculation[0])
                 is_end = state_calculation[2]
                 current_table = self.__create_table("Step: "+str(self.__step_number),
                                                     self.__variable_count,
