@@ -26,6 +26,10 @@ class Control_panel(QtGui.QWidget):
         self.__to_scatter__signals()
         self.__build_window()
 
+        QtCore.QObject.connect(self.__mode_switcher, QtCore.SIGNAL("currentIndexChanged(int)"),
+                               self,QtCore.SLOT("set_mod(int)"))
+
+
         self.show()
 
     def __build_window(self):
@@ -42,6 +46,9 @@ class Control_panel(QtGui.QWidget):
         self.__lay.addWidget(self.__apply_btn, 3, 0)
         self.__lay.addWidget(self.__calc_btn, 3, 1)
 
+    @QtCore.pyqtSlot(int)
+    def set_mod(self, int):
+        self.emit_apply_signal()
 
     def __getNumber(self):
         return int(self.__input_var_x.text()), int(self.__input_var_s.text())

@@ -16,7 +16,17 @@ class Table(QtGui.QTableWidget):
         self.setMinimumHeight(300)
         #self.setAutoScroll(False)
         self.__fill_zeros()
+        self.__fill_additional_main_line()
+
         self.show()
+
+    def __fill_additional_main_line(self)->None:
+        for i in range(self.rowCount()-1):
+            j = i + self.__main_variable_count+1
+            self.setItem(i, j, QtGui.QTableWidgetItem("1"))
+            pass
+
+
 
     def __fill_zeros(self):
 
@@ -29,7 +39,7 @@ class Table(QtGui.QTableWidget):
 
     def __collect_data(self):
 
-        array = num.zeros(shape=(self.rowCount(),self.columnCount()))
+        array = num.zeros(shape=(self.rowCount(), self.columnCount()))
         for i in range(self.rowCount()):
             for j in range(self.columnCount()):
                 item = self.item(i,j)
